@@ -36,28 +36,29 @@ def sign_message(message, sk, EC: EllipticCurve):
 
     # Compute r
     # If r is zero choose another cryptographic random k.
-    r = 0
-    while r == 0:
+    r_x = 0
+    while r_x == 0:
         # Pick random cryptographic random
-        k = getRandomK(EC)
+        k = random.randint(1, EC.n-1)
 
         # Calculating point on curve.
         curve_point = k * EC.generator
 
-        r = curve_point.x() % EC.n
+        r_x = curve_point.x() % EC.n
 
-    s = pow(k, -1, EC.n) * (message_hash + r * sk) % EC.n
+    k_inverse = pow(k, -1, EC.n)
+    s = k_inverse * (message_hash + r_x * sk) % EC.n
 
-    return s, r
-
-
-def getRandomK(EC: EllipticCurve):
-    max_int = EC.n - 1
-    random_int = random.randint(1, max_int)
-    return random_int
+    return r_x, s
 
 
 def verify_signature(message, s, r_x, pk):
+    # SOME STEPS TO VERIFY CURVE POINT
+    # TODO
+
+    # SOME STEPS TO VERIFY r AND s.
+    # TODO
+
     # Hash the message
     message_hash = hash_SHA256(message)
 
@@ -74,14 +75,14 @@ if __name__ == '__main__':
     message = b'Det var sku et godt link christian (kakadue)'
 
     # Generate a random int as secret key
-    sk = getRandomK(EC=EC)
+    sk = random.randint(1, EC.n-1)
 
     # Create a public key
     pk = sk * EC.generator
 
     # Sign message
-    s, r = sign_message(message=message, sk=sk, EC=EC)
+    r_x, s = sign_message(message=message, sk=sk, EC=EC)
 
     # Verify signature on message
-    result = verify_signature(message=message, s=s, pk=pk, r_x=r)
+    result = verify_signature(message=message, s=s, pk=pk, r_x=r_x)
     print("Message:", message.decode('ascii'), "verification on signature is:", result)
