@@ -1,14 +1,16 @@
 import random
 
+import ecdsa
+
 from src.own_ecdsa import EllipticCurve
 
 
 class Alice:
-    def __init__(self, x_input, EC: EllipticCurve, randomness_from_dealer=None):
+    def __init__(self, x_input, EC=EllipticCurve(generator=ecdsa.curves.SECP256k1.generator), randomness_from_dealer=None):
         self.randomness_from_dealer = randomness_from_dealer
         self.order = EC.p
         self.x_b = random.randint(0, self.order)
-        self.x_a = (x_input - self.x_b) % self.order
+        self.x_a = (x_input - self.x_b)
         self.EC = EC
 
     def receive_input_share_from_other_participant(self, input_share_from_other_participant):
@@ -63,9 +65,9 @@ class Alice:
         return (x_a + x_b) % self.order
 
     def convert(self, secret_share):
-        secret_curve_point = (secret_share * self.EC.generator)
+        secret_curve_point = self.EC.generator * secret_share
         return secret_curve_point
 
-    def open_curve_point(self, secret_share_b):
-        curve_point = (self.x_a + secret_share_b) % self.order  # TODO
+    def open_curve_point(self, secret_share_point_a, secret_share_point_b):
+        curve_point = (secret_share_point_a + secret_share_point_b)
         return curve_point

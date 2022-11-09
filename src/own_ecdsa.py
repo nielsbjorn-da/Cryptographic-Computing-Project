@@ -71,6 +71,7 @@ def verify_signature(message, s, r_x, pk, EC: EllipticCurve):
 
 def create_generator():
     EC = EllipticCurve(generator=ecdsa.curves.SECP256k1.generator)
+
     return EC
 
 if __name__ == '__main__':
