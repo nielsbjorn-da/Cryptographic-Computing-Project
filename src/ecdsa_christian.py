@@ -1,6 +1,6 @@
 import random
 from Crypto.Hash import SHA512
-import ecdsa
+import own_ecdsa
 
 
 # I STOLE THIS: https://rosettacode.org/wiki/Modular_inverse#Python

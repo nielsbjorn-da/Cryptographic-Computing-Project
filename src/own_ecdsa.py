@@ -4,6 +4,7 @@ from Crypto.Hash import SHA256
 import ecdsa.curves
 
 
+
 class EllipticCurve():
     def __init__(self, generator):
         self.generator = generator
@@ -39,7 +40,7 @@ def sign_message(message, sk, EC: EllipticCurve):
     r_x = 0
     while r_x == 0:
         # Pick random cryptographic random
-        k = random.randint(1, EC.n-1)
+        k = random.randint(1, EC.n - 1)
 
         # Calculating point on curve.
         curve_point = k * EC.generator
@@ -52,7 +53,7 @@ def sign_message(message, sk, EC: EllipticCurve):
     return r_x, s
 
 
-def verify_signature(message, s, r_x, pk):
+def verify_signature(message, s, r_x, pk, EC: EllipticCurve):
     # SOME STEPS TO VERIFY CURVE POINT
     # TODO
 
@@ -68,14 +69,17 @@ def verify_signature(message, s, r_x, pk):
 
     return r_x == curve_point.x()
 
+def create_generator():
+    EC = EllipticCurve(generator=ecdsa.curves.SECP256k1.generator)
+    return EC
 
 if __name__ == '__main__':
-    EC = EllipticCurve(generator=ecdsa.curves.SECP256k1.generator)
+    EC = create_generator()
 
     message = b'Det var sku et godt link christian (kakadue)'
 
     # Generate a random int as secret key
-    sk = random.randint(1, EC.n-1)
+    sk = random.randint(1, EC.n - 1)
 
     # Create a public key
     pk = sk * EC.generator
@@ -84,5 +88,7 @@ if __name__ == '__main__':
     r_x, s = sign_message(message=message, sk=sk, EC=EC)
 
     # Verify signature on message
-    result = verify_signature(message=message, s=s, pk=pk, r_x=r_x)
+    result = verify_signature(message=message, s=s, pk=pk, r_x=r_x, EC=EC)
+
     print("Message:", message.decode('ascii'), "verification on signature is:", result)
+    print(EC.n)

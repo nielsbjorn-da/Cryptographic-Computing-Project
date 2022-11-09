@@ -15,7 +15,6 @@ class Test(TestCase):
         for i in range(len(inputs)):
             x, y = inputs[i]
             order_p = 50
-            print(f"\nGroup: Z_{order_p}")
             alice = Alice(x, order=order_p)
             bob = Bob(y, order=order_p)
             dealer = Dealer(order=order_p)
