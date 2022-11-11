@@ -31,6 +31,19 @@ def key_gen():
 
 
 def user_independent_preprocessing():
+    EC = EllipticCurve(generator=ecdsa.curves.SECP256k1.generator)
+    a = random.randint(0, EC.p)
+    secret_share_a_a = random.randint(0, EC.p)
+    secret_share_a_b = (a - secret_share_a_a) % EC.p
+
+    b = random.randint(0, EC.p)
+    secret_share_b_a = random.randint(0, EC.p)
+    secret_share_b_b = (a - secret_share_b_a) % EC.p
+
+    c = random.randint(0, EC.p)
+    secret_share_c_a = random.randint(0, EC.p)
+    secret_share_c_b = (a - secret_share_c_a) % EC.p
+
     pass
 
 
