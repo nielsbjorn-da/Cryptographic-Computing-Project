@@ -71,3 +71,5 @@ class Alice:
     def open_curve_point(self, secret_share_point_a, secret_share_point_b):
         curve_point = (secret_share_point_a + secret_share_point_b)
         return curve_point
+
+
