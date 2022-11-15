@@ -42,8 +42,6 @@ class Test(TestCase):
         random_triples = dealer.create_u_v_w()
 
         threshold.user_dependent_preprocessing(random_triple=random_triples)
-        random_triple_alice = threshold.alice.randomness_from_dealer
-        random_triple_bob = threshold.bob.randomness_from_dealer
 
         sk1, sk2 = util.mult_two_wires(alice, bob, alice.k_inverse, bob.k_inverse, alice.sk_a, bob.sk_b,
                                        random_triples[0], random_triples[1])

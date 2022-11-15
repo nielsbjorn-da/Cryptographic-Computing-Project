@@ -16,7 +16,7 @@ class ThresholdEcdsa:
         self.alice = Alice(123)
         self.bob = Bob(123)
         self.dealer = Dealer(order=self.EC.p)
-        pk = self.key_gen()
+        self.pk = self.key_gen()
 
     def convert(self, secret_share):
         secret_curve_point = self.EC.generator * secret_share
@@ -35,8 +35,9 @@ class ThresholdEcdsa:
         secret_share_bob = (sk - secret_share_alice) % self.EC.p
         # Generate public key
         pk = self.open_curve_point(self.convert(secret_share_alice), self.convert(secret_share_bob))
+        self.alice.sk_a, self.bob.sk_b = secret_share_alice, secret_share_bob
 
-        return secret_share_alice, secret_share_bob, pk
+        return pk
 
     def user_independent_preprocessing(self):
         #Step 1
