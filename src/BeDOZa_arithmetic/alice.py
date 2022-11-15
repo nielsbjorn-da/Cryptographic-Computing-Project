@@ -6,15 +6,16 @@ from src.own_ecdsa import EllipticCurve
 
 
 class Alice:
-    def __init__(self, x_input, EC=EllipticCurve(generator=ecdsa.curves.SECP256k1.generator), randomness_from_dealer=None):
+    def __init__(self, x_input=0, EC=EllipticCurve(generator=ecdsa.curves.SECP256k1.generator), randomness_from_dealer=None):
+        self.EC = EC
         self.randomness_from_dealer = randomness_from_dealer
-        self.order = EC.p
+        self.order = self.EC.n
         self.x_b = random.randint(0, self.order)
         self.x_a = (x_input - self.x_b)
-        self.EC = EC
         self.k_inverse = None
         self.sk_a = None
         self.sk_prime_a = None
+        self.curve_k_a = None
 
     def receive_input_share_from_other_participant(self, input_share_from_other_participant):
         self.y_a = input_share_from_other_participant

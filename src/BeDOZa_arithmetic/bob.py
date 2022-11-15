@@ -11,12 +11,13 @@ class Bob:
                  randomness_from_dealer=None):
         self.EC = EC
         self.randomness_from_dealer = randomness_from_dealer
-        self.order = self.EC.p
+        self.order = self.EC.n
         self.y_b = random.randint(0, self.order)
         self.y_a = (y_input - self.y_b)
         self.k_inverse = None
         self.sk_b = None
         self.sk_prime_b = None
+        self.curve_k_b = None
 
     def receive_input_share_from_other_participant(self, input_share_from_other_participant):
         self.x_b = input_share_from_other_participant

@@ -2,9 +2,9 @@ import random
 
 import ecdsa
 
-from ..BeDOZa_arithmetic.alice import Alice
-from ..BeDOZa_arithmetic.bob import Bob
-from ..BeDOZa_arithmetic.dealer import Dealer
+from src.BeDOZa_arithmetic.alice import Alice
+from src.BeDOZa_arithmetic.bob import Bob
+from src.BeDOZa_arithmetic.dealer import Dealer
 import src.BeDOZa_arithmetic.util as util
 
 from src.own_ecdsa import EllipticCurve
@@ -13,9 +13,9 @@ from src.own_ecdsa import EllipticCurve
 class ThresholdEcdsa:
     def __init__(self):
         self.EC = EllipticCurve(generator=ecdsa.curves.SECP256k1.generator)
-        self.alice = Alice(123)
-        self.bob = Bob(123)
-        self.dealer = Dealer(order=self.EC.p)
+        self.alice = Alice()
+        self.bob = Bob()
+        self.dealer = Dealer(order=self.EC.n)
         self.pk = self.key_gen()
 
     def convert(self, secret_share):
@@ -28,11 +28,11 @@ class ThresholdEcdsa:
 
     def key_gen(self):
         # Generate a secret key
-        sk = random.randint(0, self.EC.p)
+        sk = random.randint(0, self.EC.n)
 
         # Generate secret shares for both alice and bob
-        secret_share_alice = random.randint(0, self.EC.p)
-        secret_share_bob = (sk - secret_share_alice) % self.EC.p
+        secret_share_alice = random.randint(0, self.EC.n)
+        secret_share_bob = (sk - secret_share_alice) % self.EC.n
         # Generate public key
         pk = self.open_curve_point(self.convert(secret_share_alice), self.convert(secret_share_bob))
         self.alice.sk_a, self.bob.sk_b = secret_share_alice, secret_share_bob
@@ -54,14 +54,13 @@ class ThresholdEcdsa:
         bob.k_inverse = bob.randomness_from_dealer[0]
 
         #Step 4
-        c_inverse = pow(c, -1, self.EC.p)  # TODO: n or p
+        c_inverse = pow(c, -1, self.EC.n)  # TODO: n or p
         b_a = alice.randomness_from_dealer[1]
         b_b = bob.randomness_from_dealer[1]
         alice.curve_k_a = alice.convert(b_a) * c_inverse
         bob.curve_k_b = bob.convert(b_b) * c_inverse
 
         # Step 5
-        print("hej, user independent finish")
 
     def user_dependent_preprocessing(self, random_triple=None):
         alice = self.alice
@@ -91,9 +90,13 @@ class ThresholdEcdsa:
         r_y = R.y()
 
         # Step 3 - Calculate secret shares of s
-        s_alice = self.alice.add_wires(self.alice.mult_with_constant(self.alice.k_inverse, util.hash_SHA256(message, self.EC)), self.alice.mult_with_constant(self.alice.sk_a, r_x))
-        s_bob = self.bob.add_wires(self.bob.mult_with_constant(self.bob.k_inverse, util.hash_SHA256(message, self.EC)), self.bob.mult_with_constant(self.bob.sk_b, r_x))
-        s = (s_alice + s_bob) % self.EC.p
+        hashed_message = util.hash_SHA256(message, self.EC)
+        s_alice = self.alice.add_wires(self.alice.mult_with_constant(self.alice.k_inverse, hashed_message),
+                                       self.alice.mult_with_constant(self.alice.sk_a, r_x))
+        s_bob = self.bob.add_wires(self.bob.mult_with_constant(self.bob.k_inverse, hashed_message),
+                                   self.bob.mult_with_constant(self.bob.sk_b, r_x))
+        # Open
+        s = (s_alice + s_bob) % self.EC.n
 
         return r_x, s
 
@@ -101,9 +104,10 @@ class ThresholdEcdsa:
         message_hash = util.hash_SHA256(message, self.EC)
         r_x, s = signature
 
-        s_inverse = pow(s, -1, self.EC.p)
+        s_inverse = pow(s, -1, self.EC.n)
         curve_point = (message_hash * s_inverse) % self.EC.n * self.EC.generator + (r_x * s_inverse) % self.EC.n * pk
-
+        print("r_x", r_x)
+        print("curve point.x", curve_point.x())
         return r_x == curve_point.x()
 
 
