@@ -1,5 +1,5 @@
-from src.BeDOZa_arithmetic.alice import Alice
-from src.BeDOZa_arithmetic.bob import Bob
+from .alice import Alice
+from .bob import Bob
 from Crypto.Hash import SHA256
 
 

@@ -7,15 +7,16 @@ from src.own_ecdsa import EllipticCurve
 
 class Bob:
 
-    def __init__(self, EC=EllipticCurve(generator=ecdsa.curves.SECP256k1.generator),  y_input=0,  randomness_from_dealer=None):
+    def __init__(self, y_input=0, EC=EllipticCurve(generator=ecdsa.curves.SECP256k1.generator),
+                 randomness_from_dealer=None):
+        self.EC = EC
         self.randomness_from_dealer = randomness_from_dealer
-        self.order = EC.p
+        self.order = self.EC.p
         self.y_b = random.randint(0, self.order)
         self.y_a = (y_input - self.y_b)
-        self.EC = EC
         self.k_inverse = None
         self.sk_b = None
-
+        self.sk_prime_b = None
 
     def receive_input_share_from_other_participant(self, input_share_from_other_participant):
         self.x_b = input_share_from_other_participant
@@ -59,7 +60,7 @@ class Bob:
     def add_with_constant(self, x_b):
         return x_b
 
-    def add_wires(self, x_b, y_b):
+    def add_wires(self, x_b: int, y_b: int):
         return (x_b + y_b) % self.order
 
     def mult_with_constant(self, x_b, c):

@@ -1,11 +1,11 @@
 import random
 
 import ecdsa
-from src.BeDOZa_arithmetic import alice, bob, dealer, util
-#from bob import Bob
-#from alice import Alice
-#from dealer import Dealer
-#from util import mult_two_wires
+
+from ..BeDOZa_arithmetic.alice import Alice
+from ..BeDOZa_arithmetic.bob import Bob
+from ..BeDOZa_arithmetic.dealer import Dealer
+import src.BeDOZa_arithmetic.util as util
 
 from src.own_ecdsa import EllipticCurve
 
@@ -13,13 +13,10 @@ from src.own_ecdsa import EllipticCurve
 class ThresholdEcdsa:
     def __init__(self):
         self.EC = EllipticCurve(generator=ecdsa.curves.SECP256k1.generator)
-        sk_a, sk_b, pk = self.key_gen()
-        self.pk = pk
-        self.alice = alice.Alice(123)
-        self.alice.sk_a = sk_a
-        self.bob = bob.Bob(123)
-        self.bob.sk_b = sk_b
-        self.dealer = dealer.Dealer(order=self.EC.p)
+        self.alice = Alice(123)
+        self.bob = Bob(123)
+        self.dealer = Dealer(order=self.EC.p)
+        pk = self.key_gen()
 
     def convert(self, secret_share):
         secret_curve_point = self.EC.generator * secret_share
@@ -62,17 +59,24 @@ class ThresholdEcdsa:
         alice.curve_k_a = alice.convert(b_a) * c_inverse
         bob.curve_k_b = bob.convert(b_b) * c_inverse
 
-        #Step 5
+        # Step 5
         print("hej, user independent finish")
 
-    def user_dependent_preprocessing(self):
+    def user_dependent_preprocessing(self, random_triple=None):
         alice = self.alice
         bob = self.bob
-        rand_alice, rand_bob = self.dealer.create_u_v_w()
-        sk_prime_a, sk_prime_b = util.mult_two_wires(alice, bob, alice.k_inverse, bob.k_inverse, alice.sk_a, bob.sk_b, rand_alice, rand_bob)
-        
+
+        if random_triple is not None:
+            rand_alice, rand_bob = random_triple
+        else:
+            rand_alice, rand_bob = self.dealer.create_u_v_w()
+
+        sk_prime_a, sk_prime_b = util.mult_two_wires(alice, bob, alice.k_inverse, bob.k_inverse, alice.sk_a, bob.sk_b,
+                                                     rand_alice, rand_bob)
+
         alice.sk_prime_a = sk_prime_a
         bob.sk_prime_b = sk_prime_b
+
 
     def sign_message(self, message):
         self.user_independent_preprocessing()
