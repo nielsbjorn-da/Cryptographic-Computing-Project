@@ -1,7 +1,7 @@
 import random
 
 import ecdsa
-from ..BeDOZa_arithmetic import alice, bob, dealer, util
+from src.BeDOZa_arithmetic import alice, bob, dealer, util
 #from bob import Bob
 #from alice import Alice
 #from dealer import Dealer
@@ -14,6 +14,7 @@ class ThresholdEcdsa:
     def __init__(self):
         self.EC = EllipticCurve(generator=ecdsa.curves.SECP256k1.generator)
         sk_a, sk_b, pk = self.key_gen()
+        self.pk = pk
         self.alice = alice.Alice(123)
         self.alice.sk_a = sk_a
         self.bob = bob.Bob(123)
@@ -76,4 +77,28 @@ class ThresholdEcdsa:
     def sign_message(self, message):
         self.user_independent_preprocessing()
         self.user_dependent_preprocessing()
-        pass
+
+        # Step 1
+        R = self.open_curve_point(self.alice.curve_k_a, self.bob.curve_k_b)
+
+        # Step 2
+        r_x = R.x()
+        r_y = R.y()
+
+        # Step 3 - Calculate secret shares of s
+        s_alice = self.alice.add_wires(self.alice.mult_with_constant(self.alice.k_inverse, util.hash_SHA256(message, self.EC)), self.alice.mult_with_constant(self.alice.sk_a, r_x))
+        s_bob = self.bob.add_wires(self.bob.mult_with_constant(self.bob.k_inverse, util.hash_SHA256(message, self.EC)), self.bob.mult_with_constant(self.bob.sk_b, r_x))
+        s = (s_alice + s_bob) % self.EC.p
+
+        return r_x, s
+
+    def verify_signature(self, message, signature, pk):
+        message_hash = util.hash_SHA256(message, self.EC)
+        r_x, s = signature
+
+        s_inverse = pow(s, -1, self.EC.p)
+        curve_point = (message_hash * s_inverse) % self.EC.n * self.EC.generator + (r_x * s_inverse) % self.EC.n * pk
+
+        return r_x == curve_point.x()
+
+

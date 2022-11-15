@@ -1,5 +1,6 @@
-from alice import Alice
-from bob import Bob
+from src.BeDOZa_arithmetic.alice import Alice
+from src.BeDOZa_arithmetic.bob import Bob
+from Crypto.Hash import SHA256
 
 
 def mult_two_wires(alice: Alice, bob: Bob, x_a, x_b, y_a, y_b, rand_triple_a, rand_triple_b):
@@ -25,3 +26,25 @@ def mult_two_wires(alice: Alice, bob: Bob, x_a, x_b, y_a, y_b, rand_triple_a, ra
     mult_2_b = bob.mult_with_constant(y_b, d_opened_b)
     z_b = (w_b + mult_1_b + mult_2_b) % bob.order #no e*d?
     return z_a, z_b
+
+
+def hash_SHA256(message, EC):
+    h = SHA256.new()
+    h.update(message)
+    e = h.hexdigest()
+    e = bin(int(e, 16))[2:]
+    L_n = EC.n.bit_length()
+    z = e[:L_n]
+    z = int(z)
+    return z
+    # h = SHA256.new()
+    # h.update(message)
+    #
+    # message_hash = h.hexdigest()
+    # message_hash_int = int(message_hash, 16)
+    # message_hash_binary = format(message_hash_int, 'b')
+    # n_bit_length = EC.n.bit_length()
+    # hash = message_hash_binary[:n_bit_length]
+    # hash = int(hash)
+
+    # return hash
