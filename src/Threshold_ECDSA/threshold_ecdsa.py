@@ -1,23 +1,24 @@
 import random
 
 import ecdsa
-from bob import Bob
-from alice import Alice
-from dealer import Dealer
-from util import mult_two_wires
+from ..BeDOZa_arithmetic import alice, bob, dealer, util
+#from bob import Bob
+#from alice import Alice
+#from dealer import Dealer
+#from util import mult_two_wires
 
 from src.own_ecdsa import EllipticCurve
 
 
-class threshold_ecdsa():
+class ThresholdEcdsa:
     def __init__(self):
         self.EC = EllipticCurve(generator=ecdsa.curves.SECP256k1.generator)
         sk_a, sk_b, pk = self.key_gen()
-        self.alice = Alice()
+        self.alice = alice.Alice(123)
         self.alice.sk_a = sk_a
-        self.bob = Bob()
+        self.bob = bob.Bob(123)
         self.bob.sk_b = sk_b
-        self.dealer = Dealer
+        self.dealer = dealer.Dealer(order=self.EC.p)
 
     def convert(self, secret_share):
         secret_curve_point = self.EC.generator * secret_share
@@ -41,10 +42,10 @@ class threshold_ecdsa():
 
     def user_independent_preprocessing(self):
         #Step 1
-        dealer = Dealer(order=self.EC.p)
+
         alice = self.alice
         bob = self.bob
-        alice.randomness_from_dealer, bob.randomness_from_dealer = dealer.create_u_v_w()
+        alice.randomness_from_dealer, bob.randomness_from_dealer = self.dealer.create_u_v_w()
 
         # Step 2
         c = alice.open(alice.randomness_from_dealer[2], bob.randomness_from_dealer[2])
@@ -67,7 +68,7 @@ class threshold_ecdsa():
         alice = self.alice
         bob = self.bob
         rand_alice, rand_bob = self.dealer.create_u_v_w()
-        sk_prime_a, sk_prime_b = mult_two_wires(alice, bob, alice.k_inverse, bob.k_inverse, alice.sk_a, bob.sk_b, rand_alice, rand_bob)
+        sk_prime_a, sk_prime_b = util.mult_two_wires(alice, bob, alice.k_inverse, bob.k_inverse, alice.sk_a, bob.sk_b, rand_alice, rand_bob)
         
         alice.sk_prime_a = sk_prime_a
         bob.sk_prime_b = sk_prime_b

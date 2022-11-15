@@ -10,8 +10,9 @@ def mult_two_wires(alice: Alice, bob: Bob, x_a, x_b, y_a, y_b, rand_triple_a, ra
     e_b = bob.add_wires(y_b, rand_triple_b[1])
 
     d_opened_a = alice.open(d_a, d_b)
-    d_opened_b = bob.open(d_b, d_a)
     e_opened_a = alice.open(e_a, e_b)
+
+    d_opened_b = bob.open(d_b, d_a)
     e_opened_b = bob.open(e_b, e_a)
 
     w_a = rand_triple_a[2]

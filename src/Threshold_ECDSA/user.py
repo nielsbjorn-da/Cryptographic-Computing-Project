@@ -1,4 +1,4 @@
-import threshold_ecdsa
+from threshold_ecdsa import ThresholdEcdsa
 
 class User:
     def __init__(self, name):
@@ -6,11 +6,12 @@ class User:
         self.name = name
         self.sk = 123
         self.pk = 321
-        self.threshold_ecdsa = threshold_ecdsa()
+        self.threshold_ecdsa = ThresholdEcdsa()
 
     def transfer(self):
         pass
 
     def sign(self, message):
-        threshold_ecdsa.sign_message(message)
+        self.threshold_ecdsa.sign_message(message)
         pass
+

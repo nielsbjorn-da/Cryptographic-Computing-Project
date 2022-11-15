@@ -13,6 +13,9 @@ class Bob:
         self.y_b = random.randint(0, self.order)
         self.y_a = (y_input - self.y_b)
         self.EC = EC
+        self.k_inverse = None
+        self.sk_b = None
+
 
     def receive_input_share_from_other_participant(self, input_share_from_other_participant):
         self.x_b = input_share_from_other_participant
