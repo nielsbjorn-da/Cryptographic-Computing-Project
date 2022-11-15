@@ -14,6 +14,7 @@ class Alice:
         self.EC = EC
         self.k_inverse = None
         self.sk_a = None
+        self.sk_prime_a = None
 
     def receive_input_share_from_other_participant(self, input_share_from_other_participant):
         self.y_a = input_share_from_other_participant

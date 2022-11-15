@@ -13,12 +13,10 @@ from src.own_ecdsa import EllipticCurve
 class ThresholdEcdsa:
     def __init__(self):
         self.EC = EllipticCurve(generator=ecdsa.curves.SECP256k1.generator)
-        sk_a, sk_b, pk = self.key_gen()
         self.alice = Alice(123)
-        self.alice.sk_a = sk_a
         self.bob = Bob(123)
-        self.bob.sk_b = sk_b
         self.dealer = Dealer(order=self.EC.p)
+        pk = self.key_gen()
 
     def convert(self, secret_share):
         secret_curve_point = self.EC.generator * secret_share
@@ -38,7 +36,10 @@ class ThresholdEcdsa:
         # Generate public key
         pk = self.open_curve_point(self.convert(secret_share_alice), self.convert(secret_share_bob))
 
-        return secret_share_alice, secret_share_bob, pk
+        self.alice.sk_a = secret_share_alice
+        self.bob.sk_b = secret_share_bob
+
+        return pk
 
     def user_independent_preprocessing(self):
         # Step 1
@@ -55,7 +56,7 @@ class ThresholdEcdsa:
         bob.k_inverse = bob.randomness_from_dealer[0]
 
         # Step 4
-        c_inverse = pow(c, -1, self.EC.p)  # TODO: n or p
+        c_inverse = pow(c, -1, self.EC.p)
         b_a = alice.randomness_from_dealer[1]
         b_b = bob.randomness_from_dealer[1]
         alice.curve_k_a = alice.convert(b_a) * c_inverse
@@ -64,15 +65,21 @@ class ThresholdEcdsa:
         # Step 5
         print("hej, user independent finish")
 
-    def user_dependent_preprocessing(self):
+    def user_dependent_preprocessing(self, random_triple=None):
         alice = self.alice
         bob = self.bob
-        rand_alice, rand_bob = self.dealer.create_u_v_w()
+
+        if random_triple is not None:
+            rand_alice, rand_bob = random_triple
+        else:
+            rand_alice, rand_bob = self.dealer.create_u_v_w()
+
         sk_prime_a, sk_prime_b = util.mult_two_wires(alice, bob, alice.k_inverse, bob.k_inverse, alice.sk_a, bob.sk_b,
                                                      rand_alice, rand_bob)
 
         alice.sk_prime_a = sk_prime_a
         bob.sk_prime_b = sk_prime_b
+
 
     def sign_message(self, message):
         self.user_independent_preprocessing()
