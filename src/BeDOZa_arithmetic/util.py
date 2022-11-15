@@ -1,5 +1,6 @@
-from alice import Alice
-from bob import Bob
+from .alice import Alice
+from .bob import Bob
+
 
 
 def mult_two_wires(alice: Alice, bob: Bob, x_a, x_b, y_a, y_b, rand_triple_a, rand_triple_b):

@@ -1,11 +1,11 @@
 import random
 
 import ecdsa
-from ..BeDOZa_arithmetic import alice, bob, dealer, util
-#from bob import Bob
-#from alice import Alice
-#from dealer import Dealer
-#from util import mult_two_wires
+
+from ..BeDOZa_arithmetic.alice import Alice
+from ..BeDOZa_arithmetic.bob import Bob
+from ..BeDOZa_arithmetic.dealer import Dealer
+import src.BeDOZa_arithmetic.util as util
 
 from src.own_ecdsa import EllipticCurve
 
@@ -14,11 +14,11 @@ class ThresholdEcdsa:
     def __init__(self):
         self.EC = EllipticCurve(generator=ecdsa.curves.SECP256k1.generator)
         sk_a, sk_b, pk = self.key_gen()
-        self.alice = alice.Alice(123)
+        self.alice = Alice(123)
         self.alice.sk_a = sk_a
-        self.bob = bob.Bob(123)
+        self.bob = Bob(123)
         self.bob.sk_b = sk_b
-        self.dealer = dealer.Dealer(order=self.EC.p)
+        self.dealer = Dealer(order=self.EC.p)
 
     def convert(self, secret_share):
         secret_curve_point = self.EC.generator * secret_share
@@ -41,7 +41,7 @@ class ThresholdEcdsa:
         return secret_share_alice, secret_share_bob, pk
 
     def user_independent_preprocessing(self):
-        #Step 1
+        # Step 1
 
         alice = self.alice
         bob = self.bob
@@ -50,26 +50,27 @@ class ThresholdEcdsa:
         # Step 2
         c = alice.open(alice.randomness_from_dealer[2], bob.randomness_from_dealer[2])
 
-        #Step 3
+        # Step 3
         alice.k_inverse = alice.randomness_from_dealer[0]
         bob.k_inverse = bob.randomness_from_dealer[0]
 
-        #Step 4
+        # Step 4
         c_inverse = pow(c, -1, self.EC.p)  # TODO: n or p
         b_a = alice.randomness_from_dealer[1]
         b_b = bob.randomness_from_dealer[1]
         alice.curve_k_a = alice.convert(b_a) * c_inverse
         bob.curve_k_b = bob.convert(b_b) * c_inverse
 
-        #Step 5
+        # Step 5
         print("hej, user independent finish")
 
     def user_dependent_preprocessing(self):
         alice = self.alice
         bob = self.bob
         rand_alice, rand_bob = self.dealer.create_u_v_w()
-        sk_prime_a, sk_prime_b = util.mult_two_wires(alice, bob, alice.k_inverse, bob.k_inverse, alice.sk_a, bob.sk_b, rand_alice, rand_bob)
-        
+        sk_prime_a, sk_prime_b = util.mult_two_wires(alice, bob, alice.k_inverse, bob.k_inverse, alice.sk_a, bob.sk_b,
+                                                     rand_alice, rand_bob)
+
         alice.sk_prime_a = sk_prime_a
         bob.sk_prime_b = sk_prime_b
 
