@@ -1,13 +1,15 @@
-import unittest
 from unittest import TestCase
 from dealer import Dealer
-from alice import Alice
-from bob import Bob
-from src import own_ecdsa
 from util import mult_two_wires
-
+from src.BeDOZa_arithmetic.alice import Alice
+from src.BeDOZa_arithmetic.bob import Bob
+import ecdsa
+from src.Threshold_ECDSA.threshold_ecdsa import threshold_ecdsa
 
 class Test(TestCase):
+    def setUp(self):
+        self.order = ecdsa.curves.SECP256k1.order
+        self.generator = ecdsa.curves.SECP256k1.generator
 
     def test_mult_with_wires(self):
         # Initialization
@@ -15,14 +17,14 @@ class Test(TestCase):
 
         for i in range(len(inputs)):
             x, y = inputs[i]
-            alice = Alice(x_input=x)
-            bob = Bob(y_input=y)
-            dealer = Dealer(alice.order)
+            alice = Alice(order=self.order, x_input=x)
+            bob = Bob(order=self.order, y_input=y)
+            dealer = Dealer(self.order)
 
             alice.receive_input_share_from_other_participant(bob.send_input_share_to_alice())
             bob.receive_input_share_from_other_participant(alice.send_input_share_to_bob())
 
-            alice_triple, bob_triple = dealer.create_u_v_w()
+            alice_triple, bob_triple = dealer.rand_mul()
 
             zA, zB = mult_two_wires(alice, bob, alice.x_a, bob.x_b, alice.y_a, bob.y_b, alice_triple, bob_triple)
 
@@ -35,8 +37,8 @@ class Test(TestCase):
         for i in range(len(inputs)):
             x, y = inputs[i]
 
-            alice = Alice(x_input=x)
-            bob = Bob(y_input=y)
+            alice = Alice(order=self.order, x_input=x)
+            bob = Bob(order=self.order, y_input=y)
 
             alice.receive_input_share_from_other_participant(bob.send_input_share_to_alice())
             bob.receive_input_share_from_other_participant(alice.send_input_share_to_bob())
@@ -55,8 +57,8 @@ class Test(TestCase):
         for i in range(len(inputs)):
             x, y = inputs[i]
 
-            alice = Alice(x_input=x)
-            bob = Bob(y_input=y)
+            alice = Alice(order=self.order, x_input=x)
+            bob = Bob(order=self.order, y_input=y)
 
             alice.receive_input_share_from_other_participant(bob.send_input_share_to_alice())
             bob.receive_input_share_from_other_participant(alice.send_input_share_to_bob())
@@ -71,45 +73,47 @@ class Test(TestCase):
 
 
     def test_convert(self):
-        EC = own_ecdsa.create_generator()
 
         message = 40
 
         message2 = 59
 
-        alice = Alice(x_input=message, EC=EC)
+        alice = Alice(order=self.order, x_input=message)
 
-        bob = Bob(y_input=message2, EC=EC)
+        bob = Bob(order=self.order, y_input=message2)
 
         bob.receive_input_share_from_other_participant(alice.x_b)
 
-        secret_curve_point_bob = bob.convert(bob.x_b)
+        threshold_ECDSA = threshold_ecdsa()
 
-        secret_point_alice = alice.convert(alice.x_a)
+        secret_curve_point_bob = threshold_ECDSA.convert(bob.x_b)
+
+        secret_point_alice = threshold_ECDSA.convert(alice.x_a)
 
         self.assertNotEqual(secret_point_alice, secret_curve_point_bob)
 
-        message_point = alice.convert(message)
+        message_point = threshold_ECDSA.convert(message)
 
         self.assertEqual(message_point, secret_point_alice + secret_curve_point_bob)
 
     def test_open(self):
-        EC = own_ecdsa.create_generator()
 
         message = 40
 
         message2 = 59
 
-        alice = Alice(x_input=message, EC=EC)
+        alice = Alice(order=self.order, x_input=message)
 
-        bob = Bob(y_input=message2, EC=EC)
+        bob = Bob(order=self.order, y_input=message2)
 
         bob.receive_input_share_from_other_participant(alice.x_b)
 
-        secret_curve_point_bob = bob.convert(bob.x_b)
+        threshold_ECDSA = threshold_ecdsa()
 
-        secret_point_alice = alice.convert(alice.x_a)
+        secret_curve_point_bob = threshold_ECDSA.convert(bob.x_b)
 
-        curve_point = alice.open_curve_point(secret_curve_point_bob, secret_point_alice)
+        secret_point_alice = threshold_ECDSA.convert(alice.x_a)
 
-        self.assertEqual(message * EC.generator, curve_point)
+        curve_point = threshold_ECDSA.open_curve_point(secret_curve_point_bob, secret_point_alice)
+
+        self.assertEqual(message * self.generator, curve_point)

@@ -1,23 +1,21 @@
 import random
 
-import ecdsa
-
-from src.own_ecdsa import EllipticCurve
-
 
 class Bob:
 
-    def __init__(self, y_input=0, EC=EllipticCurve(generator=ecdsa.curves.SECP256k1.generator),
+    def __init__(self, order, y_input=0,
                  randomness_from_dealer=None):
-        self.EC = EC
+        self.secret_share_of_secret_key = None
+        self.order = order
         self.randomness_from_dealer = randomness_from_dealer
-        self.order = self.EC.n
         self.y_b = random.randint(0, self.order)
         self.y_a = (y_input - self.y_b)
-        self.k_inverse = None
-        self.sk_b = None
-        self.sk_prime_b = None
-        self.curve_k_b = None
+
+    def set_secret_share_of_secret_key(self, secret_share_of_secret_key):
+        self.secret_share_of_secret_key = secret_share_of_secret_key
+
+    def get_secret_share_of_secret_key(self):
+        return self.secret_share_of_secret_key
 
     def receive_input_share_from_other_participant(self, input_share_from_other_participant):
         self.x_b = input_share_from_other_participant
@@ -69,11 +67,3 @@ class Bob:
 
     def open(self, x_b, x_a):
         return (x_b + x_a) % self.order
-
-    def convert(self, secret_share):
-        secret_curve_point = self.EC.generator * secret_share
-        return secret_curve_point
-
-    def open_curve_point(self, secret_share_point_a, secret_share_point_b):
-        curve_point = (secret_share_point_a + secret_share_point_b)
-        return curve_point
