@@ -33,7 +33,7 @@ def hash_SHA256(message, order):
     h.update(message)
     e = h.hexdigest()
     e = bin(int(e, 16))[2:]
-    L_n = order.bit_length()
-    z = e[:L_n]
-    z = int(z)
-    return z
+    # L_n = order.bit_length()
+    # z = e[:L_n]
+    # z = int(z)
+    return int(e)

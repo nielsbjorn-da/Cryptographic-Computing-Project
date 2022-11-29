@@ -9,7 +9,8 @@ class User:
         self.pk = None
 
     def transfer(self, amount, to_id):
-        print(self.wallet)
+        print("---------- On " + self.id + "'s side ----------")
+        print(self.id, "has", self.wallet)
         self.wallet -= amount
         amount_as_string = str(amount)
 
@@ -19,12 +20,13 @@ class User:
         message = '{' + '"amount": ' + amount_as_string + ', "to_id": ' + '"' + to_id_as_string + '"' + ', "from_id": ' + '"' + from_id_as_string + '"' + '}'
         message = message.encode("utf8")
         r_x, s = self.protocol.sign(message)
-        print(self.wallet)
-        print("----------")
+        print("Subtracting " + str(amount) + " from wallet")
+        print(self.id, "has", self.wallet)
         return message, r_x, s, self.pk
 
     def receive(self, message, r_x, s, pk):
-        print(self.wallet)
+        print("---------- On " + self.id + "'s side ----------")
+        print(self.id, "has", self.wallet)
         result = self.protocol.verify(message, r_x, s, pk)
         message_as_json_object = json.loads(message)
         amount = message_as_json_object["amount"]
@@ -33,9 +35,9 @@ class User:
         to_id_as_string = message_as_json_object["to_id"]
         from_id_as_string = message_as_json_object["from_id"]
         if result:
+            print("Adding " + str(amount) + " to wallet")
             self.wallet = self.wallet + amount
-        print(self.wallet)
-
+        print(self.id, "has", self.wallet)
 
     def set_pk(self, pk):
         self.pk = pk
