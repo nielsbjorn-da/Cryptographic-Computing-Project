@@ -1,8 +1,7 @@
 # Cryptographic-Computing-Project
-A 2.5 ECTS point project about threshold wallet with BeDoza for secret sharing and ECDSA for signing protocol
+A 2.5 ECTS point project about threshold wallets with BeDoza for secret sharing and ECDSA for signing protocol. Python implementation.
 
-
-
+<!--
 ## Notes
 ### Threshold Wallets:
 
@@ -34,3 +33,4 @@ A 2.5 ECTS point project about threshold wallet with BeDoza for secret sharing a
 	Just bedoza
 
 Section 4 is an important section of our project. 
+-->
