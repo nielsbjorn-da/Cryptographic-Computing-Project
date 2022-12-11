@@ -79,9 +79,12 @@ class timing_of_threshold_ecdsa():
         secret_share_of_k_inverse_for_server2 = secret_share_of_a_for_server2
 
         # Step 4
+        # start_test = time.perf_counter()
         c_inverse = pow(c, -1, self.order)
         secret_shared_curve_point_of_k_inverse_for_server1 = self.convert(secret_share_of_b_for_server1) * c_inverse
         secret_shared_curve_point_of_k_inverse_for_server2 = self.convert(secret_share_of_b_for_server2) * c_inverse
+        # end_test = time.perf_counter()
+        # print((end_test-start_test)*1000)
 
         # Step 5
         end = time.perf_counter()
@@ -141,7 +144,7 @@ class timing_of_threshold_ecdsa():
 
 
 if __name__ == '__main__':
-    number_of_messages = 100
+    number_of_messages = 10000
     random_messages = create_random_messages(number_of_messages)
     threshold_ECDSA = timing_of_threshold_ecdsa()
 
